@@ -1,4 +1,4 @@
-package logging // import "resenje.org/loggign"
+package logging // import "resenje.org/logging"
 
 import (
 	"container/ring"
