@@ -8,6 +8,9 @@ import (
 	"sync"
 )
 
+// RotatingFileHandler writes all log messages to file with capability to
+// rotate files once they reach defined size.
+// If file on provided path does not exist it will be created.
 type RotatingFileHandler struct {
 	NullHandler
 
@@ -27,6 +30,7 @@ type RotatingFileHandler struct {
 	lock     sync.RWMutex
 }
 
+// GetLevel returns minimal log level that this handler will process.
 func (handler *RotatingFileHandler) GetLevel() Level {
 	return handler.Level
 }
@@ -70,6 +74,8 @@ func (handler *RotatingFileHandler) open() error {
 	return nil
 }
 
+// Close releases resources used by this handler (file that log messages
+// were written into).
 func (handler *RotatingFileHandler) Close() error {
 	handler.lock.Lock()
 	defer handler.lock.Unlock()
@@ -168,6 +174,7 @@ func (handler *RotatingFileHandler) rotate() error {
 	return nil
 }
 
+// Handle writes message from log record into file.
 func (handler *RotatingFileHandler) Handle(record *Record) error {
 	handler.lock.Lock()
 	defer handler.lock.Unlock()

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 )
 
+// Levels of logging supported by library.
+// They are ordered in descending order or imporance.
 const (
 	EMERGENCY Level = iota
 	ALERT
@@ -21,8 +23,10 @@ const (
 	running
 )
 
+// Level represents log level for log message.
 type Level int8
 
+// String returns stirng representation of log level.
 func (level Level) String() string {
 	switch level {
 	case EMERGENCY:
@@ -44,6 +48,8 @@ func (level Level) String() string {
 	}
 }
 
+// MarshalJSON is implementation of json.Marshaler interface, will be used when
+// log level is serialized to json.
 func (level Level) MarshalJSON() ([]byte, error) {
 	return json.Marshal(level.String())
 }

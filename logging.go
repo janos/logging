@@ -15,6 +15,14 @@ var (
 	lock    = &sync.RWMutex{}
 )
 
+// Logger is struct that is capable of processing log messages.
+// It is central point of application logging configuration. Application
+// can have multiple loggers with different names and at moment of logging
+// logger is chosen.
+//
+// Each logger has level and ignores all log records below defined
+// level. Also, each logger has array of handlers used to to actuall log
+// record processing.
 type Logger struct {
 	Name          string
 	Level         Level
@@ -28,6 +36,11 @@ type Logger struct {
 	countOut      uint64
 }
 
+// NewLogger creates and returns new logger instance with provided name, log level,
+// handlers and buffer length.
+// Name of logger has to be unique when it is created or error will be returned.
+// Log level is lowest level or log record that this logger will handle.
+// Log records (above defined log level) will be passed to all log handlers for processing.
 func NewLogger(name string, level Level, handlers []Handler, bufferLength int) (*Logger, error) {
 	lock.Lock()
 	defer lock.Unlock()
@@ -51,6 +64,8 @@ func NewLogger(name string, level Level, handlers []Handler, bufferLength int) (
 	return logger, nil
 }
 
+// GetLogger returns logger instance based on provided name.
+// If logger does not exist, error will be returned.
 func GetLogger(name string) (*Logger, error) {
 	logger, ok := loggers[name]
 	if !ok {
@@ -59,18 +74,29 @@ func GetLogger(name string) (*Logger, error) {
 	return logger, nil
 }
 
+// RemoveLogger deletes logger from global logger registry.
 func RemoveLogger(name string) {
 	lock.Lock()
 	defer lock.Unlock()
 	delete(loggers, name)
 }
 
+// RemoveLoggers removes all loggers from global logger registry.
+// After calling this, not loggers exist, so new ones has to be creaded
+// for logging to work.
 func RemoveLoggers() {
 	lock.Lock()
 	defer lock.Unlock()
 	loggers = make(map[string]*Logger)
 }
 
+// WaitForAllUnprocessedRecords blocks execution until all unprocessed
+// log records are processed.
+// Since this library implements async logging, it is possible to have
+// unprocessed logs at the moment when application is terminating.
+// In that case, log messages can be lost. This mehtods blocks execution
+// until all log records are processed, to ensure that all log messages
+// are handled.
 func WaitForAllUnprocessedRecords() {
 	var wg sync.WaitGroup
 	for _, logger := range loggers {
@@ -83,10 +109,12 @@ func WaitForAllUnprocessedRecords() {
 	wg.Wait()
 }
 
+// String returns logger name.
 func (logger *Logger) String() string {
 	return logger.Name
 }
 
+// run starts async log records processing.
 func (logger *Logger) run() {
 	defer func() {
 		logger.WaitForUnprocessedRecords()
@@ -123,6 +151,10 @@ recordLoop:
 	}
 }
 
+// WaitForUnprocessedRecords block execution until all unprocessed log records
+// for this logger are processed.
+// In order to wait for processing in all loggers, logging.WaitForAllUnprocessedRecords
+// can be used.
 func (logger *Logger) WaitForUnprocessedRecords() {
 	runtime.Gosched()
 	logger.Unpause()
@@ -148,25 +180,31 @@ func (logger *Logger) WaitForUnprocessedRecords() {
 	}
 }
 
+// closeHandlers calls Close for all handlers for this logger
+// to release resources.
 func (logger *Logger) closeHandlers() {
 	for _, handler := range logger.Handlers {
 		handler.Close()
 	}
 }
 
+// Pause temporarily stops processing of log messages in current logger.
 func (logger *Logger) Pause() {
 	logger.stateChannel <- paused
 }
 
+// Unpause continues processing of log messages in current logger.
 func (logger *Logger) Unpause() {
 	logger.stateChannel <- running
 }
 
+// Stop permanently stops processing of log messages in current logger.
 func (logger *Logger) Stop() {
 	logger.stateChannel <- stopped
 	logger.waiter.Wait()
 }
 
+// SetBufferLength sets lenth of buffer for accepting log records.
 func (logger *Logger) SetBufferLength(length int) {
 	logger.lock.Lock()
 	defer logger.lock.Unlock()
@@ -178,6 +216,7 @@ func (logger *Logger) SetBufferLength(length int) {
 	}
 }
 
+// AddHandler add new handler to current logger.
 func (logger *Logger) AddHandler(handler Handler) {
 	logger.lock.Lock()
 	defer logger.lock.Unlock()
@@ -185,6 +224,7 @@ func (logger *Logger) AddHandler(handler Handler) {
 	logger.flushBuffer()
 }
 
+// ClearHandlers removes all handlers from current logger.
 func (logger *Logger) ClearHandlers() {
 	logger.lock.Lock()
 	defer logger.lock.Unlock()
@@ -193,6 +233,7 @@ func (logger *Logger) ClearHandlers() {
 	logger.flushBuffer()
 }
 
+// SetLevel sets lowes level that current logger will process.
 func (logger *Logger) SetLevel(level Level) {
 	logger.lock.Lock()
 	logger.Level = level
@@ -220,6 +261,7 @@ func (logger *Logger) flushBuffer() {
 	}
 }
 
+// log creates log record and submits it for processing.
 func (logger *Logger) log(level Level, format string, a ...interface{}) {
 	var message string
 	if format == "" {
@@ -238,74 +280,92 @@ func (logger *Logger) log(level Level, format string, a ...interface{}) {
 	logger.recordChannel <- record
 }
 
+// Logf logs provided message with formatting.
 func (logger *Logger) Logf(level Level, format string, a ...interface{}) {
 	logger.log(level, format, a...)
 }
 
+// Log logs provided message.
 func (logger *Logger) Log(level Level, a ...interface{}) {
 	logger.log(level, "", a...)
 }
 
+// Emergencyf logs provided message with formatting in EMERGENCY level.
 func (logger *Logger) Emergencyf(format string, a ...interface{}) {
 	logger.log(EMERGENCY, format, a...)
 }
 
+// Emergency logs provided message in EMERGENCY level.
 func (logger *Logger) Emergency(a ...interface{}) {
 	logger.log(EMERGENCY, "", a...)
 }
 
+// Aleftf logs provided message with formatting in ALERT level.
 func (logger *Logger) Alertf(format string, a ...interface{}) {
 	logger.log(ALERT, format, a...)
 }
 
+// Aleft logs provided message in ALERT level.
 func (logger *Logger) Alert(a ...interface{}) {
 	logger.log(ALERT, "", a...)
 }
 
+// Criticalf logs provided message with formatting in CRITICAL level.
 func (logger *Logger) Criticalf(format string, a ...interface{}) {
 	logger.log(CRITICAL, format, a...)
 }
 
+// Critical logs provided message in CRITICAL level.
 func (logger *Logger) Critical(a ...interface{}) {
 	logger.log(CRITICAL, "", a...)
 }
 
+// Errorf logs provided message with formatting in ERROR level.
 func (logger *Logger) Errorf(format string, a ...interface{}) {
 	logger.log(ERROR, format, a...)
 }
 
+// Error logs provided message in ERROR level.
 func (logger *Logger) Error(a ...interface{}) {
 	logger.log(ERROR, "", a...)
 }
 
+// Warningf logs provided message with formatting in WARNING level.
 func (logger *Logger) Warningf(format string, a ...interface{}) {
 	logger.log(WARNING, format, a...)
 }
 
+// Warning logs provided message in WARNING level.
 func (logger *Logger) Warning(a ...interface{}) {
 	logger.log(WARNING, "", a...)
 }
 
+// Noticef logs provided message with formatting in NOTICE level.
 func (logger *Logger) Noticef(format string, a ...interface{}) {
 	logger.log(NOTICE, format, a...)
 }
 
+// Notice logs provided message in NOTICE level.
 func (logger *Logger) Notice(a ...interface{}) {
 	logger.log(NOTICE, "", a...)
 }
 
+// Infof logs provided message with formatting in INFO level.
 func (logger *Logger) Infof(format string, a ...interface{}) {
 	logger.log(INFO, format, a...)
 }
 
+// Info logs provided message in INFO level.
 func (logger *Logger) Info(a ...interface{}) {
 	logger.log(INFO, "", a...)
 }
 
+// Debugf logs provided message with formatting in DEBUG level.
 func (logger *Logger) Debugf(format string, a ...interface{}) {
 	logger.log(DEBUG, format, a...)
 }
 
+// Debug logs provided message in DEBUG level.
 func (logger *Logger) Debug(a ...interface{}) {
 	logger.log(DEBUG, "", a...)
 }

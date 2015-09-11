@@ -6,6 +6,7 @@ import (
 	"log/syslog"
 )
 
+// SyslogHandler sends all messages to syslog daemon.
 type SyslogHandler struct {
 	NullHandler
 
