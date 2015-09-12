@@ -6,6 +6,12 @@ import (
 	"sync"
 )
 
+// Handler that writes log messages to file.
+// If file on provided path does not exist it will be created.
+//
+// Note that this handler does not perform any kind of file rotation or
+// truncation, so files will grow indefinitly. You might want to check out
+// RotatingFileHandler and
 type FileHandler struct {
 	NullHandler
 
@@ -19,6 +25,7 @@ type FileHandler struct {
 	lock   sync.RWMutex
 }
 
+// GetLevel returns minimal log level that this handler will process.
 func (handler *FileHandler) GetLevel() Level {
 	return handler.Level
 }
@@ -47,6 +54,8 @@ func (handler *FileHandler) open() error {
 	return nil
 }
 
+// Close releases resources used by this handler (file that log messages
+// were written into).
 func (handler *FileHandler) Close() error {
 	handler.lock.Lock()
 	defer handler.lock.Unlock()
@@ -70,6 +79,7 @@ func (handler *FileHandler) close() error {
 	return nil
 }
 
+// Handle writes message from log record into file.
 func (handler *FileHandler) Handle(record *Record) error {
 	handler.lock.Lock()
 	defer handler.lock.Unlock()

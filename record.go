@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Record is representation of single message that needs to be logged in single handler.
 type Record struct {
 	Time    time.Time `json:"time"`
 	Level   Level     `json:"level"`
