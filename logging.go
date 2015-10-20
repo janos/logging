@@ -30,7 +30,6 @@ type Logger struct {
 	buffer        *ring.Ring
 	stateChannel  chan uint8
 	recordChannel chan *Record
-	waiter        sync.WaitGroup
 	lock          sync.RWMutex
 	countIn       uint64
 	countOut      uint64
@@ -54,7 +53,6 @@ func NewLogger(name string, level Level, handlers []Handler, bufferLength int) (
 		buffer:        ring.New(bufferLength),
 		stateChannel:  make(chan uint8, 0),
 		recordChannel: make(chan *Record, 2048),
-		waiter:        sync.WaitGroup{},
 		lock:          sync.RWMutex{},
 		countOut:      0,
 		countIn:       0,
@@ -128,7 +126,6 @@ recordLoop:
 		case state := <-logger.stateChannel:
 			switch state {
 			case stopped:
-				logger.waiter.Done()
 				break recordLoop
 			case paused:
 			stateLoop:
@@ -137,7 +134,6 @@ recordLoop:
 					case state := <-logger.stateChannel:
 						switch state {
 						case stopped:
-							logger.waiter.Done()
 							break recordLoop
 						case running:
 							break stateLoop
@@ -157,7 +153,6 @@ recordLoop:
 // can be used.
 func (logger *Logger) WaitForUnprocessedRecords() {
 	runtime.Gosched()
-	logger.Unpause()
 	var (
 		diff     uint64
 		diffPrev uint64
@@ -201,7 +196,6 @@ func (logger *Logger) Unpause() {
 // Stop permanently stops processing of log messages in current logger.
 func (logger *Logger) Stop() {
 	logger.stateChannel <- stopped
-	logger.waiter.Wait()
 }
 
 // SetBufferLength sets lenth of buffer for accepting log records.
