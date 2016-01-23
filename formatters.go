@@ -45,3 +45,12 @@ func (formatter *JsonFormatter) Format(record *Record) string {
 	data, _ := json.Marshal(record)
 	return string(data)
 }
+
+// MessageFormatter logs only Message from the Record.
+type MessageFormatter struct{}
+
+// Format returns only the Record Message
+func (formatter *MessageFormatter) Format(record *Record) string {
+	return record.Message
+}
+
