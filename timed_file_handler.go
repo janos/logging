@@ -18,6 +18,7 @@ type TimedFileHandler struct {
 	FileExtension  string
 	FilenameLayout string
 	FileMode       os.FileMode
+	DirectoryMode  os.FileMode
 
 	timestamp string
 	file      *os.File
@@ -64,7 +65,10 @@ func (handler *TimedFileHandler) Handle(record *Record) (err error) {
 
 			filename += "." + handler.FileExtension
 		}
-		if err = os.MkdirAll(filepath.Dir(filename), 0750); err != nil {
+		if handler.DirectoryMode == 0 {
+			handler.DirectoryMode = 0750
+		}
+		if err = os.MkdirAll(filepath.Dir(filename), handler.DirectoryMode); err != nil {
 			return err
 		}
 		if handler.FileMode == 0 {
