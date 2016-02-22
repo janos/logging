@@ -65,6 +65,8 @@ func NewLogger(name string, level Level, handlers []Handler, bufferLength int) (
 // GetLogger returns logger instance based on provided name.
 // If logger does not exist, error will be returned.
 func GetLogger(name string) (*Logger, error) {
+	lock.Lock()
+	defer lock.Unlock()
 	logger, ok := loggers[name]
 	if !ok {
 		return nil, fmt.Errorf("Unknown logger %s", name)
@@ -96,6 +98,8 @@ func RemoveLoggers() {
 // until all log records are processed, to ensure that all log messages
 // are handled.
 func WaitForAllUnprocessedRecords() {
+	lock.Lock()
+	defer lock.Unlock()
 	var wg sync.WaitGroup
 	for _, logger := range loggers {
 		wg.Add(1)
