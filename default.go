@@ -26,23 +26,29 @@ func InitDefaultLogger() {
 	}
 }
 
+func getDefaultLogger() *Logger {
+	lock.Lock()
+	defer lock.Unlock()
+	return loggers["default"]
+}
+
 // Pause temporarily stops processing of log messages in default logger.
 func Pause() {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.Pause()
 	}
 }
 
 // Unpause continues processing of log messages in default logger.
 func Unpause() {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.Unpause()
 	}
 }
 
 // Stop permanently stops processing of log messages in default logger.
 func Stop() {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.Stop()
 	}
 }
@@ -50,41 +56,41 @@ func Stop() {
 // SetLevel sets maximum level for log messages that default logger
 // will process.
 func SetLevel(level Level) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.SetLevel(level)
 	}
 }
 
 func SetBufferLength(length int) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.SetBufferLength(length)
 	}
 }
 
 // AddHandler adds new handler to default logger.
 func AddHandler(handler Handler) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.AddHandler(handler)
 	}
 }
 
 // ClearHandlers remove all handlers from default logger.
 func ClearHandlers() {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.ClearHandlers()
 	}
 }
 
 // Logf logs provided message with formatting with default logger.
 func Logf(level Level, format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(level, format, a...)
 	}
 }
 
 // Log logs provided message with default logger.
 func Log(level Level, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(level, "", a...)
 	}
 }
@@ -92,14 +98,14 @@ func Log(level Level, a ...interface{}) {
 // Emergencyf logs provided message with formatting in EMERGENCY level
 // with default logger.
 func Emergencyf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(EMERGENCY, format, a...)
 	}
 }
 
 // Emergency logs provided message in EMERGENCY level with default logger.
 func Emergency(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(EMERGENCY, "", a...)
 	}
 }
@@ -107,14 +113,14 @@ func Emergency(a ...interface{}) {
 // Alertf logs provided message with formatting in ALERT level
 // with default logger.
 func Alertf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(ALERT, format, a...)
 	}
 }
 
 // Alert logs provided message in ALERT level with default logger.
 func Alert(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(ALERT, "", a...)
 	}
 }
@@ -122,14 +128,14 @@ func Alert(a ...interface{}) {
 // Criticalf logs provided message with formatting in CRITICAL level
 // with default logger.
 func Criticalf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(CRITICAL, format, a...)
 	}
 }
 
 // Critical logs provided message in CRITICAL level with default logger.
 func Critical(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(CRITICAL, "", a...)
 	}
 }
@@ -137,14 +143,14 @@ func Critical(a ...interface{}) {
 // Errorf logs provided message with formatting in ERROR level
 // with default logger.
 func Errorf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(ERROR, format, a...)
 	}
 }
 
 // Error logs provided message in ERROR level with default logger.
 func Error(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(ERROR, "", a...)
 	}
 }
@@ -152,14 +158,14 @@ func Error(a ...interface{}) {
 // Warningf logs provided message with formatting in WARNING level
 // with default logger.
 func Warningf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(WARNING, format, a...)
 	}
 }
 
 // Warning logs provided message in WARNING level with default logger.
 func Warning(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(WARNING, "", a...)
 	}
 }
@@ -167,14 +173,14 @@ func Warning(a ...interface{}) {
 // Noticef logs provided message with formatting in NOTICE level
 // with default logger.
 func Noticef(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(NOTICE, format, a...)
 	}
 }
 
 // Notice logs provided message in NOTICE level with default logger.
 func Notice(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(NOTICE, "", a...)
 	}
 }
@@ -182,14 +188,14 @@ func Notice(a ...interface{}) {
 // Infof logs provided message with formatting in INFO level
 // with default logger.
 func Infof(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(INFO, format, a...)
 	}
 }
 
 // Info logs provided message in INFO level with default logger.
 func Info(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(INFO, "", a...)
 	}
 }
@@ -197,14 +203,14 @@ func Info(a ...interface{}) {
 // Debugf logs provided message with formatting in DEBUG level
 // with default logger.
 func Debugf(format string, a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(DEBUG, format, a...)
 	}
 }
 
 // Debug logs provided message in DEBUG level with default logger.
 func Debug(a ...interface{}) {
-	if logger, ok := loggers["default"]; ok {
+	if logger := getDefaultLogger(); logger != nil {
 		logger.log(DEBUG, "", a...)
 	}
 }
