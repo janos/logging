@@ -35,7 +35,7 @@ func (handler *FileHandler) open() error {
 		return nil
 	}
 
-	file, err := os.OpenFile(handler.FilePath, os.O_APPEND|os.O_WRONLY, handler.FileMode)
+	file, err := os.OpenFile(handler.FilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, handler.FileMode)
 
 	if err != nil {
 		if !os.IsNotExist(err) {
