@@ -18,7 +18,7 @@ func InitDefaultLogger() {
 		&WriteHandler{
 			Level:     DEBUG,
 			Formatter: &StandardFormatter{TimeFormat: StandardTimeFormat},
-			Writer:    os.Stdout,
+			Writer:    os.Stderr,
 		},
 	}, 0)
 	if err != nil {

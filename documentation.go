@@ -9,7 +9,7 @@
 // be processed.
 //
 // Most simple way of using this module is by just importing it and
-// start logging. Default logger (that writes messages to stdout)
+// start logging. Default logger (that writes messages to stderr)
 // is created by default.
 //
 // Example:
