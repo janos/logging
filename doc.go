@@ -1,4 +1,4 @@
-// logging package is async logger library. It is based on idea that
+// Package logging is async logger library. It is based on idea that
 // log messages are created when client wants to log something, but
 // actual processing is done is designated goroutine. This means that
 // main application will not be blocked while logging is performed with
