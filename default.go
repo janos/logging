@@ -27,8 +27,8 @@ func InitDefaultLogger() {
 }
 
 func getDefaultLogger() *Logger {
-	lock.Lock()
-	defer lock.Unlock()
+	lock.RLock()
+	defer lock.RUnlock()
 	return loggers["default"]
 }
 

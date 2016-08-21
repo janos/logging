@@ -65,9 +65,9 @@ func NewLogger(name string, level Level, handlers []Handler, bufferLength int) (
 // GetLogger returns logger instance based on provided name.
 // If logger does not exist, error will be returned.
 func GetLogger(name string) (*Logger, error) {
-	lock.Lock()
-	defer lock.Unlock()
+	lock.RLock()
 	logger, ok := loggers[name]
+	lock.RUnlock()
 	if !ok {
 		return nil, fmt.Errorf("Unknown logger %s", name)
 	}
@@ -236,6 +236,7 @@ func (logger *Logger) SetLevel(level Level) {
 	logger.lock.Lock()
 	logger.Level = level
 	logger.flushBuffer()
+	logger.lock.Unlock()
 }
 
 func (logger *Logger) flushBuffer() {
