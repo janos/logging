@@ -1,8 +1,13 @@
 package logging
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 )
+
+// ErrInvalidLevel is error returned if no valid log level can be decoded.
+var ErrInvalidLevel = errors.New("invalid log level")
 
 // Levels of logging supported by library.
 // They are ordered in descending order or imporance.
@@ -52,4 +57,29 @@ func (level Level) String() string {
 // log level is serialized to json.
 func (level Level) MarshalJSON() ([]byte, error) {
 	return json.Marshal(level.String())
+}
+
+// UnmarshalJSON implements json.Unamrshaler interface.
+func (level *Level) UnmarshalJSON(data []byte) error {
+	switch string(bytes.ToUpper(data)) {
+	case `"EMERGENCY"`, "0":
+		*level = EMERGENCY
+	case `"ALERT"`, "1":
+		*level = ALERT
+	case `"CRITICAL"`, "2":
+		*level = CRITICAL
+	case `"ERROR"`, "3":
+		*level = ERROR
+	case `"WARNING"`, "4":
+		*level = WARNING
+	case `"NOTICE"`, "5":
+		*level = NOTICE
+	case `"INFO"`, "6":
+		*level = INFO
+	case `"DEBUG"`, "7":
+		*level = DEBUG
+	default:
+		return ErrInvalidLevel
+	}
+	return nil
 }
