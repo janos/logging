@@ -83,3 +83,34 @@ func (level *Level) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+
+// MarshalText is implementation of encoding.TextMarshaler interface,
+// will be used when log level is serialized to text.
+func (level Level) MarshalText() ([]byte, error) {
+	return []byte(level.String()), nil
+}
+
+// UnmarshalText implements encoding.TextUnamrshaler interface.
+func (level *Level) UnmarshalText(data []byte) error {
+	switch string(bytes.ToUpper(data)) {
+	case "EMERGENCY", "0":
+		*level = EMERGENCY
+	case "ALERT", "1":
+		*level = ALERT
+	case "CRITICAL", "2":
+		*level = CRITICAL
+	case "ERROR", "3":
+		*level = ERROR
+	case "WARNING", "4":
+		*level = WARNING
+	case "NOTICE", "5":
+		*level = NOTICE
+	case "INFO", "6":
+		*level = INFO
+	case "DEBUG", "7":
+		*level = DEBUG
+	default:
+		return ErrInvalidLevel
+	}
+	return nil
+}
