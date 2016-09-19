@@ -77,8 +77,8 @@ func GetLogger(name string) (*Logger, error) {
 // RemoveLogger deletes logger from global logger registry.
 func RemoveLogger(name string) {
 	lock.Lock()
-	defer lock.Unlock()
 	delete(loggers, name)
+	lock.Unlock()
 }
 
 // RemoveLoggers removes all loggers from global logger registry.
@@ -86,8 +86,8 @@ func RemoveLogger(name string) {
 // for logging to work.
 func RemoveLoggers() {
 	lock.Lock()
-	defer lock.Unlock()
 	loggers = make(map[string]*Logger)
+	lock.Unlock()
 }
 
 // WaitForAllUnprocessedRecords blocks execution until all unprocessed
@@ -99,16 +99,16 @@ func RemoveLoggers() {
 // are handled.
 func WaitForAllUnprocessedRecords() {
 	lock.Lock()
-	defer lock.Unlock()
 	var wg sync.WaitGroup
 	for _, logger := range loggers {
 		wg.Add(1)
 		go func(logger *Logger) {
-			defer wg.Done()
 			logger.WaitForUnprocessedRecords()
+			wg.Done()
 		}(logger)
 	}
 	wg.Wait()
+	lock.Unlock()
 }
 
 // String returns logger name.
@@ -205,30 +205,31 @@ func (logger *Logger) Stop() {
 // SetBufferLength sets lenth of buffer for accepting log records.
 func (logger *Logger) SetBufferLength(length int) {
 	logger.lock.Lock()
-	defer logger.lock.Unlock()
 
 	if length == 0 {
 		logger.buffer = nil
 	} else if length != logger.buffer.Len() {
 		logger.buffer = ring.New(length)
 	}
+
+	logger.lock.Unlock()
 }
 
 // AddHandler add new handler to current logger.
 func (logger *Logger) AddHandler(handler Handler) {
 	logger.lock.Lock()
-	defer logger.lock.Unlock()
 	logger.Handlers = append(logger.Handlers, handler)
 	logger.flushBuffer()
+	logger.lock.Unlock()
 }
 
 // ClearHandlers removes all handlers from current logger.
 func (logger *Logger) ClearHandlers() {
 	logger.lock.Lock()
-	defer logger.lock.Unlock()
 	logger.closeHandlers()
 	logger.Handlers = make([]Handler, 0)
 	logger.flushBuffer()
+	logger.lock.Unlock()
 }
 
 // SetLevel sets lowes level that current logger will process.
@@ -269,14 +270,13 @@ func (logger *Logger) log(level Level, format string, a ...interface{}) {
 		message = fmt.Sprintf(format, a...)
 	}
 
-	record := &Record{
+	atomic.AddUint64(&logger.countIn, 1)
+	logger.recordChannel <- &Record{
 		Level:   level,
 		Message: message,
 		Time:    time.Now(),
 		logger:  logger,
 	}
-	atomic.AddUint64(&logger.countIn, 1)
-	logger.recordChannel <- record
 }
 
 // Logf logs provided message with formatting.

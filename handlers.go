@@ -56,9 +56,8 @@ type WriteHandler struct {
 // Handle writes all provided log records to writer provided during creation.
 func (handler *WriteHandler) Handle(record *Record) error {
 	handler.lock.Lock()
-	defer handler.lock.Unlock()
-
 	_, err := handler.Writer.Write([]byte(handler.Formatter.Format(record) + "\n"))
+	handler.lock.Unlock()
 	return err
 }
 
@@ -81,9 +80,8 @@ type MemoryHandler struct {
 // Handle appends message to Messages array.
 func (handler *MemoryHandler) Handle(record *Record) error {
 	handler.lock.Lock()
-	defer handler.lock.Unlock()
-
 	handler.Messages = append(handler.Messages, handler.Formatter.Format(record))
+	handler.lock.Unlock()
 	return nil
 }
 

@@ -32,11 +32,11 @@ func (handler *TimedFileHandler) GetLevel() Level {
 
 // Close releases resources used by this handler (file that log messages
 // were written into).
-func (handler *TimedFileHandler) Close() error {
+func (handler *TimedFileHandler) Close() (err error) {
 	handler.lock.Lock()
-	defer handler.lock.Unlock()
-
-	return handler.close()
+	err = handler.close()
+	handler.lock.Unlock()
+	return
 }
 
 func (handler *TimedFileHandler) close() error {

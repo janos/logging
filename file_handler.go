@@ -56,11 +56,11 @@ func (handler *FileHandler) open() error {
 
 // Close releases resources used by this handler (file that log messages
 // were written into).
-func (handler *FileHandler) Close() error {
+func (handler *FileHandler) Close() (err error) {
 	handler.lock.Lock()
-	defer handler.lock.Unlock()
-
-	return handler.close()
+	err = handler.close()
+	handler.lock.Unlock()
+	return
 }
 
 func (handler *FileHandler) close() error {

@@ -16,10 +16,6 @@ type Record struct {
 func (record *Record) process() {
 	logger := record.logger
 	logger.lock.RLock()
-	defer func() {
-		logger.lock.RUnlock()
-		atomic.AddUint64(&logger.countOut, 1)
-	}()
 
 	if record.Level <= logger.Level {
 		for _, handler := range logger.Handlers {
@@ -30,4 +26,7 @@ func (record *Record) process() {
 			}
 		}
 	}
+
+	logger.lock.RUnlock()
+	atomic.AddUint64(&logger.countOut, 1)
 }

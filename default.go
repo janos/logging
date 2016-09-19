@@ -26,10 +26,11 @@ func InitDefaultLogger() {
 	}
 }
 
-func getDefaultLogger() *Logger {
+func getDefaultLogger() (l *Logger) {
 	lock.RLock()
-	defer lock.RUnlock()
-	return loggers["default"]
+	l = loggers["default"]
+	lock.RUnlock()
+	return
 }
 
 // Pause temporarily stops processing of log messages in default logger.
