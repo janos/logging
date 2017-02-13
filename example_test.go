@@ -1,4 +1,4 @@
-// Copyright (c) 2015, 2016 Janoš Guljaš <janos@resenje.org>
+// Copyright (c) 2015-2017 Janoš Guljaš <janos@resenje.org>
 // All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -40,9 +40,7 @@ func Example_custom() {
 		Formatter: &PassThroughFormatter{},
 	}
 
-	if _, err := NewLogger("myLogger", WARNING, []Handler{memoryHandler}, 0); err != nil {
-		panic(err)
-	}
+	NewLogger("myLogger", WARNING, []Handler{memoryHandler}, 0)
 
 	// this will probably be called somewhere else in the code
 	if logger, err := GetLogger("myLogger"); err != nil {
@@ -50,7 +48,6 @@ func Example_custom() {
 	} else {
 		logger.Infof("Should not be logged")
 		logger.Error("Should be logged")
-
 	}
 
 	// wait for all messages to be processed, this is blocking
