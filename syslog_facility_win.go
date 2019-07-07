@@ -1,4 +1,4 @@
-// Copyright (c) 2015, 2016 Janoš Guljaš <janos@resenje.org>
+// Copyright (c) 2019 Janoš Guljaš <janos@resenje.org>
 // All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -7,7 +7,5 @@
 
 package logging
 
-// SyslogHander is not available on Windows platform.
-type SyslogHandler struct {
-	NullHandler
-}
+// SyslogFacility is a string representation of syslog facility.
+type SyslogFacility string
