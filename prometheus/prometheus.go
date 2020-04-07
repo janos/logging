@@ -6,8 +6,9 @@
 package prometheus
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"resenje.org/logging"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Handler increments Prometheus counter metrics partitioned by log level.
@@ -78,8 +79,10 @@ type Counter struct {
 
 // CounterOptions holds options for NewCounter constructor.
 type CounterOptions struct {
-	Name string
-	Help string
+	Namespace string
+	Subsystem string
+	Name      string
+	Help      string
 }
 
 // NewCounter creates new Counter instance.
@@ -88,16 +91,21 @@ func NewCounter(options *CounterOptions) (c *Counter) {
 	if options == nil {
 		options = new(CounterOptions)
 	}
+	if options.Subsystem == "" {
+		options.Subsystem = "logging"
+	}
 	if options.Name == "" {
-		options.Name = "logging_messages_total"
+		options.Name = "messages_total"
 	}
 	if options.Help == "" {
 		options.Help = "Number of log messages processed, partitioned by log level."
 	}
 	vector := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: options.Name,
-			Help: options.Help,
+			Namespace: options.Namespace,
+			Subsystem: options.Subsystem,
+			Name:      options.Name,
+			Help:      options.Help,
 		},
 		[]string{"level"},
 	)
