@@ -83,6 +83,7 @@ func (handler *TimedFileHandler) Handle(record *Record) (err error) {
 		if err != nil {
 			return err
 		}
+		handler.timestamp = timestamp
 	}
 
 	msg := handler.Formatter.Format(record) + "\n"
